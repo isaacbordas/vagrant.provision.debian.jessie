@@ -1,4 +1,4 @@
-#vagrant.provision.debian.jessie
+vagrant.provision.debian.jessie
 
 Provisioning vagrant box debian/jessie64
 
