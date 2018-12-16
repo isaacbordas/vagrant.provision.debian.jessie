@@ -38,6 +38,8 @@ Vagrant.configure("2") do |config|
     sudo mv composer.phar /usr/local/bin/composer >> /home/vm_build.log
     echo "Installing git" | tee /home/vm_build.log
     apt-get install -y git >> /home/vm_build.log
+    echo "Installing unzip" | tee /home/vm_build.log
+    apt-get install -y unzip >> /home/vm_build.log
     echo "Enable mod_rewrite" | tee /home/vm_build.log
     sudo a2enmod rewrite >> /home/vm_build.log
     echo "Enable ssl" | tee /home/vm_build.log
