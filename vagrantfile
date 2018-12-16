@@ -1,0 +1,46 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "debian/jessie64"
+    
+    config.vm.provider :virtualbox do |v|
+        v.customize ["modifyvm", :id, "--memory", 2048]
+    end
+
+  config.vm.network "private_network", ip: "192.168.33.177"
+
+  config.vm.synced_folder "web", "/var/www"
+
+  config.vm.provision "shell", inline: <<-SHELL
+    export DEBIAN_FRONTEND=noninteractive
+    echo "Updating source list" | tee /home/vm_build.log
+    apt-get update >> /home/vm_build.log
+    echo "Installing apache2" | tee /home/vm_build.log
+    apt-get install -y apache2 >> /home/vm_build.log
+    echo "Installing php7.2 repo" | tee /home/vm_build.log
+    sudo apt install ca-certificates apt-transport-https
+    wget -q https://packages.sury.org/php/apt.gpg -O- | sudo apt-key add -
+    sudo echo "deb https://packages.sury.org/php/ jessie main" | tee /etc/apt/sources.list.d/php.list
+    echo "Installing php7.2" | tee /home/vm_build.log
+    echo "Updating source list" | tee /home/vm_build.log
+    apt-get update >> /home/vm_build.log
+    sudo apt install php7.2 php7.2-cli php7.2-common php7.2-curl php7.2-gd php7.2-json php7.2-mbstring php7.2-mysql php7.2-xml php7.2-zip php7.2-bcmath
+    echo "Installing mysql" | tee /home/vm_build.log
+    debconf-set-selections <<< 'mysql-server mysql-server/root_password password your_password'
+    debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password your_password'
+    apt-get install -y mysql-server >> /home/vm_build.log
+    echo "Restart apache2" | tee /home/vm_build.log
+    service apache2 restart >> /home/vm_build.log
+    echo "Installing curl" | tee /home/vm_build.log
+    apt-get install -y curl >> /home/vm_build.log
+    echo "Installing composer" | tee /home/vm_build.log
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" | php >> /home/vm_build.log
+    php composer-setup.php | php >> /home/vm_build.log
+    php -r "unlink('composer-setup.php');" | php >> /home/vm_build.log
+    sudo mv composer.phar /usr/local/bin/composer >> /home/vm_build.log
+    echo "Installing git" | tee /home/vm_build.log
+    apt-get install -y git >> /home/vm_build.log
+    echo "Enable mod_rewrite" | tee /home/vm_build.log
+    sudo a2enmod rewrite >> /home/vm_build.log
+    echo "Enable ssl" | tee /home/vm_build.log
+    sudo a2enmod ssl >> /home/vm_build.log
+  SHELL
+end
